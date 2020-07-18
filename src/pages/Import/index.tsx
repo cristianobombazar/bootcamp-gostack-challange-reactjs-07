@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
 
 import filesize from 'filesize';
 
@@ -21,32 +20,28 @@ interface FileProps {
 const Import: React.FC = () => {
   const [uploadedFiles, setUploadedFiles] = useState<FileProps[]>([]);
 
-  const history = useHistory();
-
-  function uploadSingleFile(file: FileProps): Promise<void> {
-    const data = new FormData();
-    data.append('file', file.file);
-
-    return api.post('/transactions/import', data);
-  }
-
   async function handleUpload(): Promise<void> {
+    const data = new FormData();
+
+    data.append('file', uploadedFiles[0].name);
+
     try {
-      await Promise.all(uploadedFiles.map(file => uploadSingleFile(file)));
-      history.push('/');
+      await api.post('/transactions/import', data);
     } catch (err) {
       console.log(err.response.error);
     }
   }
 
   function submitFile(files: File[]): void {
-    const formattedFiles = files.map(file => ({
-      file,
-      name: file.name,
-      readableSize: filesize(file.size),
-    }));
-
-    setUploadedFiles(formattedFiles);
+    setUploadedFiles(
+      files.map((file) => {
+        return {
+          file,
+          name: file.name,
+          readableSize: filesize(file.size),
+        };
+      }),
+    );
   }
 
   return (
